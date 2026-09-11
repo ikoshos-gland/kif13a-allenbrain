@@ -8,18 +8,29 @@ All compute ran on TRUBA, the Turkish national HPC centre, under SLURM.
 
 ## Findings
 
-**Kif13a is an oligodendroglial gene, not a general glial gene.** Across 2,341,350 cells and
-265 sufficiently sampled subclasses, mature oligodendrocytes rank first and their precursors
-second. Astrocytes, microglia and endothelial cells sit roughly sixteen-fold lower, so the
-signal does not simply track "glia".
+**Oligodendrocytes rank top, but the size of the gap is mostly a detection effect.**
+Across 2,341,350 cells and 265 sufficiently sampled subclasses, mature oligodendrocytes rank
+first and their precursors second, on every measure. The ranking column is the mean of
+log2(CPM + 1) over all cells including non-detected ones, which contribute exactly 0.
 
-| Cell type | Mean log2 | Fraction expressing |
-|---|---|---|
-| Mature oligodendrocyte | 7.77 | 0.93 |
-| OPC (precursor) | 6.76 | 0.85 |
-| Astrocyte (telencephalic) | 3.77 | 0.51 |
-| Microglia | 3.88 | 0.49 |
-| Pericyte | 2.85 | 0.35 |
+| Cell type | Mean log2 | Fraction expressing | Level where detected (CPM) |
+|---|---|---|---|
+| Mature oligodendrocyte | 7.77 | 0.93 | 335 |
+| OPC (precursor) | 6.76 | 0.85 | 246 |
+| Microglia | 3.88 | 0.49 | 236 |
+| Astrocyte (telencephalic) | 3.77 | 0.51 | 168 |
+| Pericyte | 2.85 | 0.35 | 273 |
+
+Because that mean blends detection rate with expression level, raising 2 to a difference of
+two such means does **not** give a fold change. Doing so suggests oligodendrocytes sit about
+sixteen-fold above astrocytes; the decomposition in `analysis/detection_vs_level.py` shows the
+real split is roughly 1.8-fold in detection rate and 2.0-fold in level among detecting cells.
+
+Pericytes make the danger concrete. They rank 240th of 265 overall, yet among pericytes where
+the gene is detected it reads higher than in astrocytes. Detection rate in 10x data tracks how
+much RNA a cell type carries, a known technical confounder that this analysis does not correct
+for. So oligodendrocytes are the clear top of the ranking, but a strong claim of
+oligodendrocyte specificity is not yet established.
 
 **Precursors vary by region, mature cells do not.** Oligodendrocyte expression is flat across
 the brain, while OPC expression spans a range roughly three times wider, highest in
@@ -87,6 +98,7 @@ These read only the committed tables, so they run anywhere with `pandas` and `sc
 | `analysis/regional_heterogeneity.py` | Tests whether OPC expression is more regionally variable than oligodendrocyte expression. |
 | `analysis/cross_dataset_replication.py` | Correlates the regional ordering between the two independent cohorts. |
 | `analysis/wholebrain_subclass_ranking.py` | Builds the whole-brain ranking of all subclasses. |
+| `analysis/detection_vs_level.py` | Splits the ranking into detection rate and level among detecting cells, and shows why a fold change must not be read off the pooled means. |
 | `analysis/build_workbook.py` | Collects every result into one Excel workbook. Derived columns are live formulas; scipy statistics are written as values and labelled as such. |
 
 ## Running it
@@ -112,6 +124,7 @@ python analysis/donor_level_age_test.py
 python analysis/regional_heterogeneity.py
 python analysis/cross_dataset_replication.py
 python analysis/wholebrain_subclass_ranking.py
+python analysis/detection_vs_level.py
 ```
 
 ## Limitations
@@ -119,7 +132,8 @@ python analysis/wholebrain_subclass_ranking.py
 The measurement is mRNA, not protein, so a transcript increase does not establish that
 KIF13A protein rises. CPM is a relative unit, so a drop in total mRNA per cell would inflate
 the ratio on its own. Sequencing destroys spatial position, so this says how much, never
-where. The whole-brain ranking pools cells without a per-donor correction and is descriptive.
+where. The whole-brain ranking pools cells without a per-donor correction and is descriptive, and it
+is confounded by per-cell RNA content, which drives detection rate.
 The age result rests on one cohort covering 7 of 13 regions.
 
 ## Acknowledgment

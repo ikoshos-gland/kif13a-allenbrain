@@ -93,9 +93,10 @@ header(ws, "KIF13A bulgulari: ozet",
        "Allen Brain Cell Atlas, surum 20260711. Hesaplamalar TRUBA uzerinde SLURM ile yapildi.", 7)
 
 findings = [
-    ("Bulgu 1", "Kif13a oligodendrosit soyuna spesifik, genel bir glia geni degil."),
-    ("", "Olgun oligodendrosit 265 alt sinif icinde birinci. Astrosit ve mikroglia yaklasik 16 kat dusuk."),
-    ("", "Ayrinti: Tum Beyin Siralamasi sayfasi."),
+    ("Bulgu 1", "Olgun oligodendrosit siralamada birinci, ama aradaki farkin buyuk kismi tespit orani etkisi."),
+    ("", "265 alt sinif icinde oligodendrosit her olcutte birinci, onculu ikinci."),
+    ("", "Havuzlanmis ortalamalardan kat farki OKUNAMAZ. Astrositle arasindaki fark 16 kat degil, kabaca 1,8 kat tespit orani ve 2,0 kat seviye."),
+    ("", "Ayrinti: Tum Beyin Siralamasi ve Tespit vs Seviye sayfalari."),
     ("", ""),
     ("Bulgu 2", "Oncul hucreler bolgesel olarak degisken, olgun hucreler duz."),
     ("", "OPC yayilimi oligodendrositin yaklasik uc kati. Korteks ve hipokampusta yuksek, serebellum ve medullada dusuk."),
@@ -312,7 +313,8 @@ for i in range(first, min(first + 2, last + 1)):
 ws.auto_filter.ref = "A4:H{0}".format(last)
 notes(ws, last + 2, [
     "Ilk iki satir yesil: olgun oligodendrosit ve onculu. Ucuncu sirada medial habenulanin kolinerjik Tac2 noronlari var ama sadece 4.662 hucre.",
-    "Astrosit, mikroglia ve endotel 3,7 ile 3,9 arasinda, yani oligodendrositin yaklasik onaltida biri. Kif13a genel bir glia geni degil.",
+    "DIKKAT: Ortalama sutunu sifirlari da iceriyor, cunku tespit edilmeyen hucre log2(CPM+1) olceginde tam olarak 0 verir. Bu yuzden iki ortalamanin farkindan kat degisim OKUNAMAZ.",
+    "Astrosit, mikroglia ve endotel 3,7 ile 3,9 arasinda gorunuyor ama bunun buyuk kismi dusuk tespit orani. Ayrinti icin Tespit vs Seviye sayfasina bakin.",
     "En dusuk degerler olfaktor bulbusun inhibitor internoronlarinda.",
     "Ortancalar parca ortancalarindan havuzlanamaz, bu yuzden siralama ortalama uzerinden. Hucreler havuzlanmis, donor duzeyi duzeltmesi yok, siralama betimseldir.",
 ], 8)
@@ -447,6 +449,32 @@ notes(ws, r, [
     "Spearman rho scipy ile hesaplandi ve deger olarak yazildi.",
 ], 5)
 widths(ws, {"A": 24, "B": 22, "C": 24, "D": 13, "E": 13})
+
+# ------------------------------------------------------- 10. detection vs level
+ws = wb.create_sheet("Tespit vs Seviye")
+header(ws, "Tespit orani mi, ifade seviyesi mi?",
+       "Siralamadaki buyuk farkin ne kadari geni kac hucrenin gosterdiginden, ne kadari seviyeden geliyor.", 8)
+dv2 = pd.read_csv(RESULTS / "derived_detection_vs_level.csv")
+dv2 = dv2[["subclass", "rank_overall", "n_cells", "mean_Kif13a", "fraction_expressing",
+           "cpm_among_expressing", "naive_fold", "detection_ratio", "level_ratio_among_expressing"]]
+first, last = table(ws, dv2, 4,
+                    headers=["Alt sinif", "Genel sira", "Hucre", "Ortalama (log2, sifirlar dahil)",
+                             "Tespit orani", "Tespit edilende seviye (CPM)",
+                             "YANILTICI kat", "Tespit orani kati", "Seviye kati"],
+                    num_fmt={"n_cells": INT, "mean_Kif13a": F3, "fraction_expressing": PCT,
+                             "cpm_among_expressing": "#,##0", "naive_fold": "0.0\"x\"",
+                             "detection_ratio": "0.00\"x\"", "level_ratio_among_expressing": "0.00\"x\""})
+for i in range(first, last + 1):
+    ws.cell(row=i, column=7).fill = PatternFill("solid", fgColor="FCE4E4")
+notes(ws, last + 2, [
+    "Kesin ozdeslik: ortalama(tum hucreler) = tespit orani x ortalama(tespit edilen hucreler). Tespit edilmeyen hucre log2 olceginde tam olarak 0 katkı verir.",
+    "Bu yuzden iki ortalamanin farkindan 2 ussu alarak kat degisim hesaplanamaz. Logaritmanin ortalamasi, ortalamanin logaritmasi degildir.",
+    "YANILTICI kat sutunu kirmizi: bu sutun yanlis yorumun ne kadar sismis oldugunu gostermek icin duruyor, kullanilmamali.",
+    "Oligodendrosit ile telensefalik astrosit arasindaki gercek fark: tespit oraninda 1,82 kat, tespit edilen hucrelerdeki seviyede 1,99 kat.",
+    "Perisit uyarisi: genel siralamada 240. sirada ama tespit edilen perisitlerde seviye 273 CPM, astrositin 168 CPM degerinin uzerinde. Perisitler az RNA tasir, dolayisiyla dusuk sirasi buyuk olasilikla teknik.",
+    "10x verisinde tespit orani hucrenin RNA icerigini takip eder. Bu bilinen bir teknik karistirici ve bu analizde duzeltilmedi.",
+], 9)
+widths(ws, {"A": 22, "B": 11, "C": 11, "D": 20, "E": 13, "F": 20, "G": 14, "H": 15, "I": 13})
 
 wb.save(OUT)
 print("Kaydedildi:", OUT)
