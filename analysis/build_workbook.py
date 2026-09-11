@@ -231,23 +231,70 @@ autofit(ws)
 ws = wb.create_sheet("Tum beyin siralamasi")
 rk = pd.read_csv(RESULTS / "derived_wholebrain_subclass_ranking.csv")
 rk.insert(0, "Sira", range(1, len(rk) + 1))
+rk = rk.set_index("subclass", drop=False)
+
+# Readable labels for the tables that get read rather than filtered. Values are
+# always pulled from the ranking above, never retyped.
+TOP10 = [
+    ("327 Oligo NN", "Oligo (olgun oligodendrosit)", "OPC-Oligo"),
+    ("326 OPC NN", "OPC (oncul)", "OPC-Oligo"),
+    ("145 MH Tac2 Glut", "MH Tac2 Glut", "Medial habenula"),
+    ("298 PRP Gata3 Slc6a5 Gly-Gaba", "PRP Gata3 Slc6a5", "Medulla GABA"),
+    ("251 NTS Dbh Glut", "NTS Dbh Glut", "Medulla"),
+    ("294 MV Pax6 Gly-Gaba", "MV Pax6", "Medulla GABA"),
+    ("292 MV Nkx6-1 Gly-Gaba", "MV Nkx6-1", "Medulla GABA"),
+    ("287 MV-SPIV-PRP Dmbx1 Gly-Gaba", "MV-SPIV-PRP Dmbx1", "Medulla GABA"),
+    ("283 PRP Otp Gly-Gaba", "PRP Otp", "Medulla GABA"),
+    ("129 VMH Nr5a1 Glut", "VMH Nr5a1 Glut", "Hipotalamus"),
+]
+GLIA = [
+    ("327 Oligo NN", "Olgun oligodendrosit"),
+    ("326 OPC NN", "OPC"),
+    ("319 Astro-TE NN", "Astrosit (telensefalik)"),
+    ("334 Microglia NN", "Mikroglia"),
+    ("333 Endo NN", "Endotel"),
+    ("331 Peri NN", "Perisit"),
+]
+LOWEST = [
+    ("040 OB Trdn Gaba", "OB Trdn Gaba"),
+    ("042 OB-out Frmd7 Gaba", "OB-out Frmd7 Gaba"),
+    ("045 OB-STR-CTX Inh IMN", "OB-STR-CTX Inh IMN"),
+    ("041 OB-in Frmd7 Gaba", "OB-in Frmd7 Gaba"),
+    ("047 Sncg Gaba", "Sncg Gaba (korteks)"),
+    ("046 Vip Gaba", "Vip Gaba (korteks)"),
+]
+for key, *_ in TOP10 + GLIA + LOWEST:
+    assert key in rk.index, "siralamada yok: " + key
+
+top = pd.DataFrame({
+    "Sira": [int(rk.loc[k, "Sira"]) for k, _, _ in TOP10],
+    "Alt sinif": [lab for _, lab, _ in TOP10],
+    "Sinif": [cls for _, _, cls in TOP10],
+    "Hucre": [int(rk.loc[k, "n_cells"]) for k, _, _ in TOP10],
+    "Ortalama (log2)": [float(rk.loc[k, "mean_Kif13a"]) for k, _, _ in TOP10],
+})
+r = put(ws, 1, "En yuksek 10 hucre tipi", top, {"Hucre": INT, "Ortalama (log2)": F3})
+
+gl = pd.DataFrame({
+    "Hucre tipi": [lab for _, lab in GLIA],
+    "Ortalama (log2)": [float(rk.loc[k, "mean_Kif13a"]) for k, _ in GLIA],
+    "Ifade eden oran": [float(rk.loc[k, "fraction_expressing"]) for k, _ in GLIA],
+})
+r = put(ws, r, "Glia tipleri karsilastirmasi", gl,
+        {"Ortalama (log2)": F3, "Ifade eden oran": "0.00"})
+
+low = pd.DataFrame({
+    "Alt sinif": [lab for _, lab in LOWEST],
+    "Ortalama (log2)": [float(rk.loc[k, "mean_Kif13a"]) for k, _ in LOWEST],
+    "Ifade eden oran": [float(rk.loc[k, "fraction_expressing"]) for k, _ in LOWEST],
+})
+r = put(ws, r, "En dusuk hucreler", low,
+        {"Ortalama (log2)": F3, "Ifade eden oran": "0.00"})
+
 full = rk[["Sira", "subclass", "cell_class", "neurotransmitter", "n_cells",
-           "mean_Kif13a", "fraction_expressing", "n_partitions"]]
+           "mean_Kif13a", "fraction_expressing", "n_partitions"]].reset_index(drop=True)
 full.columns = ["Sira", "Alt sinif", "Sinif", "Notrotransmitter", "Hucre",
                 "Ortalama (log2)", "Ifade eden oran", "Parca sayisi"]
-r = put(ws, 1, "En yuksek 10 hucre tipi", full.head(10),
-        {"Hucre": INT, "Ortalama (log2)": F3, "Ifade eden oran": PCT})
-
-glia = ["327 Oligo NN", "326 OPC NN", "334 Microglia NN", "319 Astro-TE NN",
-        "333 Endo NN", "331 Peri NN"]
-gl = full[full["Alt sinif"].isin(glia)].copy()
-gl["_o"] = gl["Alt sinif"].map({s: i for i, s in enumerate(glia)})
-gl = gl.sort_values("_o").drop(columns="_o")
-r = put(ws, r, "Glia tipleri karsilastirmasi", gl,
-        {"Hucre": INT, "Ortalama (log2)": F3, "Ifade eden oran": PCT})
-
-r = put(ws, r, "En dusuk 10 hucre tipi", full.tail(10),
-        {"Hucre": INT, "Ortalama (log2)": F3, "Ifade eden oran": PCT})
 put(ws, r, "Tam siralama, 265 alt sinif", full,
     {"Hucre": INT, "Ortalama (log2)": F3, "Ifade eden oran": PCT})
 autofit(ws)
