@@ -99,7 +99,7 @@ These read only the committed tables, so they run anywhere with `pandas` and `sc
 | `analysis/cross_dataset_replication.py` | Correlates the regional ordering between the two independent cohorts. |
 | `analysis/wholebrain_subclass_ranking.py` | Builds the whole-brain ranking of all subclasses. |
 | `analysis/detection_vs_level.py` | Splits the ranking into detection rate and level among detecting cells, and shows why a fold change must not be read off the pooled means. |
-| `analysis/build_workbook.py` | Collects every result into one Excel workbook. Derived columns are live formulas; scipy statistics are written as values and labelled as such. |
+| `analysis/build_workbook.py` | Writes the numeric result tables into one Excel workbook, one sheet per topic, values only. |
 
 ## Running it
 
@@ -110,7 +110,7 @@ sbatch slurm/kif13a_v3_sequential.slurm   # all reference atlas partitions
 sbatch slurm/kif13a_aging.slurm           # the aging comparison
 ```
 
-To rebuild the Excel workbook (`Kif13a_sonuclar.xlsx`, nine sheets covering every result):
+To rebuild the Excel workbook (`Kif13a_sonuclar.xlsx`, eight sheets of plain numeric tables):
 
 ```bash
 python analysis/build_workbook.py
