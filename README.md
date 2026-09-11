@@ -87,6 +87,7 @@ These read only the committed tables, so they run anywhere with `pandas` and `sc
 | `analysis/regional_heterogeneity.py` | Tests whether OPC expression is more regionally variable than oligodendrocyte expression. |
 | `analysis/cross_dataset_replication.py` | Correlates the regional ordering between the two independent cohorts. |
 | `analysis/wholebrain_subclass_ranking.py` | Builds the whole-brain ranking of all subclasses. |
+| `analysis/build_workbook.py` | Collects every result into one Excel workbook. Derived columns are live formulas; scipy statistics are written as values and labelled as such. |
 
 ## Running it
 
@@ -95,6 +96,12 @@ On the cluster, edit the paths at the top of each script to your own scratch dir
 ```bash
 sbatch slurm/kif13a_v3_sequential.slurm   # all reference atlas partitions
 sbatch slurm/kif13a_aging.slurm           # the aging comparison
+```
+
+To rebuild the Excel workbook (`Kif13a_sonuclar.xlsx`, nine sheets covering every result):
+
+```bash
+python analysis/build_workbook.py
 ```
 
 Locally, against the committed tables:
