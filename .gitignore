@@ -1,0 +1,17 @@
+# Large intermediate tables produced by the SLURM pipeline (up to ~280 MB each)
+results/*_annotated.csv
+results/Kif13a_WMB-10Xv3-CTXsp.csv
+
+# Downloaded Allen Brain Cell Atlas cache (~103 GB, not redistributable here)
+abc_atlas/
+*.h5ad
+
+# Job logs
+logs/
+slurm-*.out
+slurm-*.err
+
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/

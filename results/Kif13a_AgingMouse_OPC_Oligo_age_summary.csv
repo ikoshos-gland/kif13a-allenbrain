@@ -1,0 +1,5 @@
+donor_age_category,class_name,subclass_name,n_cells,n_donors,mean_Kif13a,median_Kif13a,fraction_expressing
+adult,31 OPC-Oligo,326 OPC NN,33243,53,6.9350824,7.8295636,0.8714315795806636
+adult,31 OPC-Oligo,327 Oligo NN,83475,53,7.9478726,8.456071,0.9464510332434861
+aged,31 OPC-Oligo,326 OPC NN,54927,44,6.969838,7.8079867,0.879494601926193
+aged,31 OPC-Oligo,327 Oligo NN,81823,44,8.226858,8.717043,0.9499651687178422

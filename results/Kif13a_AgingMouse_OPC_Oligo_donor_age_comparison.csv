@@ -1,0 +1,5 @@
+donor_age_category,subclass_name,n_donors,total_cells,mean_of_donor_means,median_of_donor_means,mean_fraction_expressing
+adult,326 OPC NN,53,33243,6.792572,6.8692303,0.8576524778197309
+adult,327 Oligo NN,53,83475,7.8678246,7.8748884,0.9414214371898423
+aged,326 OPC NN,44,54927,6.9231935,7.0417604,0.8726269126550839
+aged,327 Oligo NN,44,81823,8.117737,8.211275,0.9414125462506704
